@@ -13,16 +13,35 @@ def traversalSearch(currentPath, extension):
     return filesList
 
 
-def getTextFiles():
+def getTextFilesPath():
     return traversalSearch(os.getcwd(), '.txt')
 
 
-def getImageFiles():
+def getImageFilesPath():
     return traversalSearch(os.getcwd(), '.jpg')
 
 
-def recordFilesName2DataFrame(imageFilesList, textFilesList):
-    pass
+def recordFilesName2DataFrame(imageFilesPathList, textFilesPathList):
+    def generateFilesNameList(filesPathList, func):
+        filesNameList = list()
+        for filePath in filesPathList:
+            filesNameList.append(func(filePath))
+        return filesNameList
+
+    recordList = list()
+
+    imageFilesNameList = generateFilesNameList(imageFilesPathList, getFileNameFromAbsolutePath)
+    textFilesNameList = generateFilesNameList(textFilesPathList, getFileNameFromAbsolutePath)
+
+    imageWithTextFilesPathList = imageFilesPathList + textFilesPathList
+    imageWithTextFilesNameList = imageFilesNameList + textFilesNameList
+
+    for filePath, fileName in zip(imageWithTextFilesPathList, imageWithTextFilesNameList):
+        recordList.append(
+            [filePath, fileName]
+        )
+
+    return recordList
 
 
 def getFileNameFromAbsolutePath(absoluteFilePath):
@@ -36,13 +55,7 @@ def moveFile():
 
 
 if __name__ == '__main__':
-    # pprint(getTextFiles())
-    textFilesList = getTextFiles()
-    # with open(textFilesList[len(textFilesList) - 1], 'r') as fp:
-    #     lines = fp.readlines()
-
-    print('-------------------------------------------------------------------')
-    # pprint(lines)
-
-    fileName = getFileNameFromAbsolutePath(textFilesList[len(textFilesList) - 1])
-    print(fileName)
+    textFilesPathList = getTextFilesPath()
+    imageFilesPathList = getImageFilesPath()
+    recordList = recordFilesName2DataFrame(imageFilesPathList, textFilesPathList)
+    pprint(recordList)
