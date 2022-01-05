@@ -21,6 +21,11 @@ def getImageFilesPath():
     return traversalSearch(os.getcwd(), '.jpg')
 
 
+def sortFunc(item):
+
+    pass
+
+
 def recordFilesName2DataFrame(imageFilesPathList, textFilesPathList):
     def generateFilesNameList(filesPathList, func):
         filesNameList = list()
@@ -59,3 +64,4 @@ if __name__ == '__main__':
     imageFilesPathList = getImageFilesPath()
     recordList = recordFilesName2DataFrame(imageFilesPathList, textFilesPathList)
     pprint(recordList)
+    recordList = sortFunc(recordList)
