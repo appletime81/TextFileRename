@@ -3,84 +3,55 @@ import shutil
 from pprint import pprint
 
 
-def sort_func(file_name):
-    if ".jpg" in file_name:
-        return file_name[-13:-11] + file_name[-19:-15] + file_name[-10:-4]
-    elif ".txt" in file_name:
-        return file_name[-16:-4]
-
-
-def get_all_files():
-    files_list = []
+def traversalSearch():
+    fileList = list()
     for home, dirName, files in os.walk(os.getcwd()):
         for file in files:
-            files_list += [os.path.join(home, file)]
-    files_list = [file for file in files_list if ("txt" in file or "jpg" in file)]
-    files_list = sorted(files_list, key=sort_func)
-    return files_list
+            if os.path.isfile(os.path.join(home, file)) and file[-4:] in ['.txt', '.jpg']:
+                fileList += [os.path.join(home, file)]
+    return fileList
 
 
-def rename_files(files):
-    sub_file_name = ""
-    image_file_list = []
-    log_file = "log.txt"
-    image_files = load_log_file(log_file)
-
-    for i, file in enumerate(files):
-        if file in image_files:
-            pass
-        else:
-            if i == 0 and "jpg" in file:
-                os.rename(file, file.replace(file[-27:-20], "ERROR"))
-
-                # 紀錄已被處理過的檔案
-                image_file_list.append(file.replace(file[-27:-20], "ERROR") + "\n")
-            elif "txt" in file:
-                with open(file, "r") as f:
-                    line = f.readline()
-                    x2 = line[0:7]
-                sub_file_name = x2
-                #sub_file_name = line
-            elif "jpg" in file:
-                file_name = file.replace(file[-27:-20], sub_file_name)
-                target_path = file_name.replace("_convert", "")
-                pprint([file_name, target_path])
-
-                # 移動檔案
-                try:
-                    shutil.copy(file, target_path)
-                except shutil.SameFileError:
-                    continue
-
-                # 紀錄已被處理過的檔案
-                image_file_list.append(file + "\n")
-
-    # 被處理過的檔案儲存至log.txt紀錄
-    save_log_file(image_file_list)
+def sortFunc(item):
+    if '.jpg' in item:
+        absolutePathList = item.split('\\')
+        machineNameList = absolutePathList[-2].split('_')
+        machineName = machineNameList[0] + '-' + machineNameList[1]
+        fileName = absolutePathList[-1].replace('.jpg', '')
+        fileNameList = fileName.split('_')
+        return machineName + '_' + fileNameList[2][-2:] + fileNameList[2][:4] + fileNameList[-1]
+    elif '.txt' in item:
+        absolutePathList = item.split('\\')
+        return absolutePathList[-1].replace('T', '').replace('.txt', '')
 
 
-def save_log_file(record_list):
-    with open("log.txt", "a") as f:
-        f.writelines(record_list)
+def moveFileAndRename(currentFile, previousFile):
+    if currentFile[-3:] == 'jpg' and previousFile[-3:] == 'txt':
+        with open(previousFile, 'r') as fp:
+            line = fp.readlines()[0]
+
+        line = line.replace('\n', '')
+        currentFileList = currentFile.split('\\')
+        n = len(currentFileList)
+        currentFileName = currentFileList[n - 1]
+        newFileName = currentFileName.replace(currentFileName[4:11], line)
+        newFolderName = currentFileList[n - 2].replace('_convert', '')
+
+        # 檢查是否有新資料夾之路徑(無包含convert之資料夾)，若沒有就創建
+        if not os.path.isdir('\\'.join(currentFileList[:n - 2] + [newFolderName]) + '\\'):
+            os.mkdir('\\'.join(currentFileList[:n - 2] + [newFolderName]) + '\\')
+
+        # 從convert資料夾複製檔案到非convert資料夾
+        shutil.copyfile(currentFile, '\\'.join(currentFileList[:n - 2] + [newFolderName] + [currentFileName]))
+
+        # 重新命名圖片檔
+        os.rename('\\'.join(currentFileList[:n - 2] + [newFolderName] + [currentFileName]),
+                  '\\'.join(currentFileList[:n - 2] + [newFolderName] + [newFileName]))
 
 
-def load_log_file(log_file):
-    # 打開log.txt比對是否有已被記錄過的檔案
-    try:
-        with open(log_file, "r") as f:
-            image_files = f.readlines()
-    except FileNotFoundError:
-        # 如果沒有log.txt檔
-        # 建立log.txt
-        with open(log_file, "w") as f:
-            pass
-        with open(log_file, "r") as f:
-            image_files = f.readlines()
-
-    image_files = [image_file.strip() for image_file in image_files]
-    return image_files
-
-
-if __name__ == "__main__":
-    all_files = get_all_files()
-    rename_files(all_files)
+if __name__ == '__main__':
+    fileList = traversalSearch()
+    fileListSorted = sorted(fileList, key=sortFunc)
+    pprint(fileListSorted)
+    for i in range(1, len(fileListSorted)):
+        moveFileAndRename(fileListSorted[i], fileListSorted[i - 1])

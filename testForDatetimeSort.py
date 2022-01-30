@@ -31,7 +31,7 @@ def traversalSearch():
 
 def sortFunc(item):
     if '.jpg' in item:
-        absolutePathList = item.split('/')
+        absolutePathList = item.split('\\')
         machineNameList = absolutePathList[-2].split('_')
         machineName = machineNameList[0] + '-' + machineNameList[1]
         fileName = absolutePathList[-1].replace('.jpg', '')
@@ -39,7 +39,7 @@ def sortFunc(item):
         print(machineName + '_' + fileNameList[2][-4:] + fileNameList[2][:4] + fileNameList[-1])
         return machineName + '_' + fileNameList[2][-2:] + fileNameList[2][:4] + fileNameList[-1]
     elif '.txt' in item:
-        absolutePathList = item.split('/')
+        absolutePathList = item.split('\\')
         print(absolutePathList[-1].replace('T', '').replace('.txt', ''))
         return absolutePathList[-1].replace('T', '').replace('.txt', '')
 
@@ -47,5 +47,5 @@ def sortFunc(item):
 if __name__ == '__main__':
     fileList = traversalSearch()
     fileListSorted = sorted(fileList, key=sortFunc)
-    print('--------------')
     pprint(fileListSorted)
+
